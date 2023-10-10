@@ -1,0 +1,146 @@
+﻿@using Microsoft.Extensions.Options;
+@using MiniSimulator.Core;
+@using MiniSimulator.Domain.Interfaces
+@using MiniSimulator.Domain.Models;
+@using MiniSimulator.Domain.Settings;
+
+@inject IGameService GameService
+@inject IOptions<SimulationSettings> SimulationSettingsOptions
+
+<div class="tournament-container container text-center">
+    @if (_simulationResult == null)
+    {
+        <div class="row">
+            <p><em>Press play to start a new tournament simulation.</em></p>
+        </div>
+
+        <button class="simulate btn btn-primary" title="Simulate game" @onclick="SimulateGroupStage">
+            <span class="oi oi-media-play" aria-hidden="true"></span>
+        </button>
+    }
+    else
+    {
+        <!-- Rounds overview -->
+        <div class="group-stage row">
+            @for (var index = 0; index < _simulationResult.Rounds.Count; index++)
+            {
+                <div class="col-lg-4">
+                    <h2>Round @(index + 1)</h2>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Home team</th>
+                            <th>Score</th>
+                            <th>Away team</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var (homeTeam, awayTeam) in _simulationResult.Rounds[index])
+                        {
+                            var match = GameService.GetMatch(homeTeam.Id, awayTeam.Id, _simulationResult.Matches);
+                            <tr>
+                                <td class="@_hovers[homeTeam.Id]" @onmouseover="() => ToggleHover(homeTeam.Id, true)" @onmouseout="() => ToggleHover(homeTeam.Id, false)">
+                                    <span class="mdi mdi-@homeTeam.Logo"></span> @homeTeam.Name
+                                </td>
+                                <td>@match.HomeTeamGoals - @match.AwayTeamGoals</td>
+                                <td class="@_hovers[awayTeam.Id]" @onmouseover="() => ToggleHover(awayTeam.Id, true)" @onmouseout="() => ToggleHover(awayTeam.Id, false)">
+                                    <span class="mdi mdi-@awayTeam.Logo"></span> @awayTeam.Name
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <!-- Team scores overview -->
+        <div class="team-scores row">
+            <div class="col-12">
+                <h2>Team scores</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Team</th>
+                            <th>Strength</th>
+                            <th>Played</th>
+                            <th>Won</th>
+                            <th>Drawn</th>
+                            <th>Lost</th>
+                            <th>For</th>
+                            <th>Against</th>
+                            <th>-/+</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (teamScore, index) in _simulationResult.TeamScores.Select((score, index) => (score, index)))
+                        {
+                            var team = _teams!.Single(team => team.Id.Equals(teamScore.TeamId));
+                            var strength = team.Strength;
+                            <tr class="@_hovers[team.Id]" @onmouseover="() => ToggleHover(team.Id, true)" @onmouseout="() => ToggleHover(team.Id, false)">
+                                <td>@(index + 1)</td>
+                                <td><span class="mdi mdi-@team.Logo"></span> @teamScore.Name</td>
+                                <td title="Strength: @strength">
+                                    <div class="rating">
+                                        <span class="star oi oi-star @GetRatingClass(strength, 1)"></span>
+                                        <span class="star oi oi-star @GetRatingClass(strength, 2)"></span>
+                                        <span class="star oi oi-star @GetRatingClass(strength, 3)"></span>
+                                        <span class="star oi oi-star @GetRatingClass(strength, 4)"></span>
+                                        <span class="star oi oi-star @GetRatingClass(strength, 5)"></span>
+                                    </div>
+                                </td>
+                                <td>@teamScore.Played</td>
+                                <td>@teamScore.Won</td>
+                                <td>@teamScore.Drawn</td>
+                                <td>@teamScore.Lost</td>
+                                <td>@teamScore.GoalsFor</td>
+                                <td>@teamScore.GoalsAgainst</td>
+                                <td>@teamScore.GoalDifference</td>
+                                <td>@teamScore.Points</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <button class="simulate btn btn-primary" title="Resimulate game" @onclick="SimulateGroupStage">
+            <span class="oi oi-reload" aria-hidden="true"></span>
+        </button>
+    }
+</div>
+
+@code {
+    private GroupStageResult? _simulationResult;
+    private List<Team>? _teams;
+
+    // Dictionary used to keep track of the team that currently has a mouse hover on it
+    // to highlight other matching team cells in the view
+    private Dictionary<Guid, string> _hovers = new();
+
+    private async Task SimulateGroupStage()
+    {
+        // Fetch simulation settings from appsettings config
+        var simulationSettings = SimulationSettingsOptions.Value;
+
+        _hovers = new Dictionary<Guid, string>();
+        _teams = simulationSettings.Teams.ToList();
+        _teams.ForEach(team => _hovers.Add(team.Id, string.Empty));
+
+        _simulationResult = await GameService.SimulateGroupStage(simulationSettings.RoundsToSimulate, _teams);
+    }
+
+    private string GetRatingClass(int strength, int starIndex)
+    {
+        // Determine how many stars should be filled based on the strength
+        var ratingIsSufficient = ((float)strength / 100 * 5) >= starIndex;
+
+        return ratingIsSufficient ? "filled" : string.Empty;
+    }
+
+    private void ToggleHover(Guid teamId, bool enable)
+    {
+        _hovers[teamId] = enable ? "hovered" : string.Empty;
+    }
+}

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MiniSimulator.Domain\MiniSimulator.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
