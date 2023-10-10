@@ -23,6 +23,14 @@ The backend is based on C# .NET 6, whereas the frontend is based Blazor.
 > Simply because it seemed fun to work with something new and to gain some experience with it!
 
 ## How to run
+### Method 1
+1. Download the file `Executable app.zip` and extract the contents to a folder
+2. Run the file `MiniSimulator.BlazorServer.exe` -> This will open a new Command prompt
+3. Copy the generated link in the prompt, e.g. https://localhost:5001/
+4. Go to the link in the browser -> this will open the Fantasy Tournament Simulator
+5. Start the simulation!
+
+### Method 2
 1. Open the `MiniSimulator.sln` in Visual Studio
 2. Right click on `3. Apps -> MiniSimulator.BlazorServer` project and select `Set as Startup Project`
 3. From the 2nd top bar, either select `MiniSimulator.BlazorServer` or `Docker` *(Docker Desktop app required\*)* as Launch Profile 

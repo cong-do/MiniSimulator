@@ -21,6 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniSimulator.Core.UnitTest
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0. Solution Items", "0. Solution Items", "{3B028E53-60EF-4D56-A386-6B92542D59C7}"
 	ProjectSection(SolutionItems) = preProject
+		Executable app.zip = Executable app.zip
 		README.md = README.md
 	EndProjectSection
 EndProject
